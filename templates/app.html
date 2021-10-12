@@ -1,0 +1,51 @@
+<html>
+
+<head>
+    <title>UPS006 - s3 bucket upload</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+    <h1>Upload file directly to AWS bucket</h1>
+    <form action="." method="POST" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit">
+    </form>
+</body>
+
+<script type="text/javascript">
+    $(function(){
+        $("form").bind("submit", function(e){
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "/build-form-action-url",
+                data: JSON.stringify({"name": $("input[name='file']")[0].files[0].name}),
+                contentType: 'application/json',
+                success: function(r) {
+                    console.log(r["url"]);
+                    var formData = new FormData($("form")[0]);
+                    $.ajax({
+                        url: r["url"],
+                        type: 'PUT',
+                        data: formData,
+                        success: function (data) {
+                            alert('File was successfully added.');
+                            $("input[name=file]").val('');
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false
+                    });
+                },
+                error: function(r) {
+                    alert(r);
+                }
+            });
+            return false;
+        });
+    });
+</script>
+
+</html>
