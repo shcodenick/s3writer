@@ -1,3 +1,4 @@
 Flask
 ipython
 boto3
+requests

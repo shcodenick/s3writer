@@ -1,6 +1,7 @@
 import boto3
 import os
 import random
+import requests
 import string
 from urllib import parse
 
@@ -27,8 +28,11 @@ def get_presigned_url(file_name):
 
 def count_records():
     """Fetches records count from CRUD app"""
-    # TODO
-    return 666
+    response = requests.get(os.environ.get("COUNT_ENDPOINT"))
+    if response.status_code == 200:
+        return response.text
+    else:
+        return -1
 
 
 @app.route("/")
