@@ -37,7 +37,12 @@ def count_records():
 
 @app.route("/")
 def yo():
-    return render_template('app.html', count=count_records())
+    return render_template('app.html')
+
+
+@app.route("/get-count")
+def get_count():
+    return {"count": count_records()}
 
 
 @app.route("/build-form-action-url", methods=['POST'])
