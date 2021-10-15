@@ -21,7 +21,7 @@
             e.preventDefault();
             $.ajax({
                 type: "POST",
-                url: "/build-form-action-url",
+                url: "/s3/build-form-action-url",
                 data: JSON.stringify({"name": $("input[name='file']")[0].files[0].name}),
                 contentType: 'application/json',
                 success: function(r) {

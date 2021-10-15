@@ -40,12 +40,18 @@ def yo():
     return render_template('app.html')
 
 
-@app.route("/get-count")
+@app.route("/s3")
+def main():
+    return render_template('app.html')
+
+
+
+@app.route("/s3/get-count")
 def get_count():
     return {"count": count_records()}
 
 
-@app.route("/build-form-action-url", methods=['POST'])
+@app.route("/s3/build-form-action-url", methods=['POST'])
 def build_form_action_url():
     data = request.get_json()
     filename = data.get("name")
