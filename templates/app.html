@@ -46,6 +46,19 @@
             });
             return false;
         });
+
+        $("#getCount").click(function(){
+            $.ajax({
+                type: "GET",
+                url: "/s3/get-count",
+                success: function(r) {
+                    alert(r["count"]);
+                },
+                error: function(r) {
+                    alert(r);
+                }
+            });
+        });
     });
 </script>
 
