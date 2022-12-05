@@ -22,7 +22,9 @@ def get_presigned_url(file_name):
     response = s3_client.generate_presigned_url('put_object', Params={
         "Bucket": os.environ.get("AWS_BUCKET_NAME"),
         'Key': file_name,
+        'ContentType': 'application/x-www-form-urlencoded; charset=UTF-8'
     }, ExpiresIn=3600)
+    print(response)
     return response
 
 
