@@ -3,3 +3,4 @@ templates/garbage.html
 *.pyc
 __pycache__
 .idea
+env.list
