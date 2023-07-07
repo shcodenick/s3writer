@@ -1,0 +1,92 @@
+name: S3 APP CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+permissions:
+      id-token: write # This is required for aws oidc connection
+      contents: read # This is required for actions/checkout
+      pull-requests: write # This is required for gh bot to comment PR
+
+env:
+  TF_LOG: INFO
+  REGION: ${{ vars.AWS_REGION }}
+  REPO: ${{ vars.ECR_REPO_URI }}
+  AWS_STATE_BUCKET: ${{ vars.AWS_STATE_BUCKET }}
+  AWS_STATE_BUCKET_KEY: ${{ vars.AWS_STATE_BUCKET_KEY }}
+  AWS_STATE_TABLE: ${{ vars.AWS_STATE_TABLE }}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials from AWS account
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ vars.AWS_OIDC_ROLE }}
+        aws-region: ${{ env.REGION }}
+        role-session-name: GitHub-OIDC-TERRAFORM
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and tag Docker image
+      run: |
+        docker build -t $REPO:latest .
+        docker tag $REPO:latest $REPO:${{ github.sha }}
+
+    - name: Push Docker image to Amazon ECR
+      run: |
+        docker push $REPO:latest
+        docker push $REPO:${{ github.sha }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.2.5
+
+    - name: Terraform Init
+      id: init
+      run: terraform init -backend-config="bucket=${AWS_STATE_BUCKET}" -backend-config="key=${AWS_STATE_BUCKET_KEY}" -backend-config="region=${REGION}" -backend-config="encrypt=true" -backend-config="dynamodb_table=${AWS_STATE_TABLE}"
+
+    - name: Terraform Enter Workspace s3app
+      id: s3app
+      run: terraform workspace select s3app
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan and Apply
+      id: planandapply
+      env:
+        TF_VAR_PRE: ${{ vars.TF_VAR_PRE }}
+        TF_VAR_OWNER: ${{ vars.TF_VAR_OWNER }}
+        TF_VAR_AWS_REGION: ${{ vars.AWS_REGION }}
+        TF_VAR_AWS_STATE_BUCKET: ${{ vars.AWS_STATE_BUCKET }}
+        TF_VAR_AWS_STATE_BUCKET_KEY: ${{ vars.AWS_STATE_BUCKET_KEY }}
+        TF_VAR_AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        TF_VAR_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        terraform plan -no-color
+        terraform apply -auto-approve -input=false
