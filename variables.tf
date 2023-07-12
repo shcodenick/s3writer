@@ -10,7 +10,7 @@ variable OWNER {
 }
 variable AWS_REGION {
   type = string
-  default = "us-east-1"
+  default = "us-east-2"
 }
 variable AWS_STATE_BUCKET {}
 variable AWS_STATE_BUCKET_KEY {}
