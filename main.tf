@@ -19,6 +19,20 @@ data "terraform_remote_state" "infra" {
   }
 }
 
+resource "aws_service_discovery_service" "s3app_sds" {
+    name = "s3app"
+    dns_config {
+        namespace_id = data.terraform_remote_state.infra.outputs.namespace_id
+        dns_records {
+          ttl  = 10
+          type = "A"
+        }
+        routing_policy = "MULTIVALUE"
+    }
+    health_check_custom_config {
+      failure_threshold = 1
+    }
+}
 
 resource "aws_ecs_task_definition" "s3_app_task_def" {
   family = "s3-app-tdef"
@@ -106,6 +120,10 @@ resource "aws_ecs_service" "s3_app" {
       data.terraform_remote_state.infra.outputs.sn_prv_az1_id,
       data.terraform_remote_state.infra.outputs.sn_prv_az2_id
     ]
+  }
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.s3app_sds.arn
   }
 
   tags = {
