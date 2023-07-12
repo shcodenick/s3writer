@@ -68,7 +68,8 @@ resource "aws_ecs_task_definition" "s3_app_task_def" {
         },
         {
           name = "COUNT_ENDPOINT"
-          value = "http://${data.terraform_remote_state.infra.outputs.alb_dns_name}/crud/count/"
+          #value = "http://${data.terraform_remote_state.infra.outputs.alb_dns_name}/crud/count/"
+          value = "http://dbapp.wkloc-ups007.net/crud/count/"
         },
         {
           name = "AWS_ACCESS_KEY_ID"
