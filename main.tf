@@ -124,8 +124,8 @@ resource "aws_ecs_service" "s3_app" {
   }
 
   service_registries {
-    #registry_arn = aws_service_discovery_service.s3app_sds.arn
-    registry_arn = data.terraform_remote_state.infra.outputs.namespace_arn
+    registry_arn = aws_service_discovery_service.s3app_sds.arn
+    port = 80
   }
 
   tags = {
