@@ -18,7 +18,7 @@ def get_presigned_url(file_name):
         aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
         region_name=os.environ.get("AWS_REGION_NAME"),
-        config=boto3.session.Config(signature_version='s3v4')
+        config=boto3.session.Config(signature_version='v4')
     )
     response = s3_client.generate_presigned_url('put_object', Params={
         "Bucket": os.environ.get("AWS_BUCKET_NAME"),
